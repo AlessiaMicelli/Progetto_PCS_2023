@@ -51,13 +51,6 @@ Point() : x(0), y(0), id(0) {} //costruttore vuoto
  {
     return (x!=p2.x || y!=p2.y);
  }
-
-
- static double dist(Point& p1,Point&p2) // funzione che calcola la distanza tra due punti, funzione che definisco in una classe ma è valida anche all'esterno della classe
- {
-    return (p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y);
- }
-
 };
 
 
