@@ -16,7 +16,6 @@
 using namespace std;
 
 
-// non va bene il convexhull per il primo test perchè ci sono punti allineati sulla x
 namespace Delaunay
 {
 
