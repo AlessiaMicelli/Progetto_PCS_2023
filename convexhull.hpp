@@ -52,13 +52,6 @@ namespace Delaunay
     return !(p1 > p2);
   }
 
-  void MergeHulls(vector<Point>& sortedV,
-                  const unsigned int& cx);
-
-
-  void MergeHull(vector<Point>& sortedV,
-                  const unsigned int& sx,
-                  const unsigned int& dx);
 
   bool UpperLine( const Point& p1,
                   const Point& p2,
