@@ -36,55 +36,6 @@ bool UpperLine(const Point& p1,          //  dati tre punti, restituisce un bool
 }
 
 
-  void MergeHulls(vector<Point>& sortedV, const unsigned int& cx)  // fonde due hulls all'interno del vettore sortedV
-      {
-        // definisco gli iteratori per la metà sinistra e destra del vettore hull
-        auto left = cx; // rappresenta il punto di intersezione dei due hull che voglio fondere
-        auto right = cx + 1;
-        // trovo il valore minore dei due hulls
-        while (left>0 && right<sortedV.size()-1 && !UpperLine(sortedV[left-1],sortedV[left], sortedV[right]))  // trova punto di intersezione tra i due hulls e crea uno nuovo che unisca le due metà. Uso UpperLine per capire se un punto è sopra o sotto la linea definita dai punti dell'hull(se Upperline = false non ho ancora trovato il punto)
-        {
-          if (sortedV[left-1].y > sortedV[right+1].y)  // se altezza di sinistra è maggiore, decremento l'iteratore lest
-          {
-            --left;
-          }
-          else  // altrimenti incremento right
-          {
-            ++right;
-          }
-        }
-
-        // faccio il merge dei due hulls
-        vector<Point> newHull;
-        newHull.reserve(sortedV.size());  // il vettore newHull deve essere in grado di contenere tanti elementi quanto la dimensione del vettore sortedV
-        // copio la metà sinistra dell'hull nel nuovo hull
-        for (auto i=cx;i>=left;--i)
-        {
-          newHull.push_back(sortedV[i]);
-        }
-        // copio la metà sinistra dell'hull nel nuovo hull
-        for (auto i=cx+1;i<=right;++i)
-        {
-          newHull.push_back(sortedV[i]);
-        }
-        // sostuisco il vettore ordinato con il nuovo hull
-        sortedV.swap(newHull);
-      }
-
-
-  void MergeHull(vector<Point>& sortedV, const unsigned int& sx, const unsigned int& dx)  // chiamo ricorsivamente la funzione stessa sulla metà sinistra e poi sulle metà destra
-  {
-      unsigned int cx;
-      if(sx<dx)
-      {
-          cx = (sx + dx)/2;
-          MergeHull( sortedV, sx, cx);
-          MergeHull( sortedV, cx+1, dx);
-          MergeHulls(sortedV, cx);    // unisco le due metà con la funzione definita precedentemente
-      }
-  }
-
-
    vector<Point> ConvexHull(vector<Point>& points)
   {
       if(points.size() < 2)
