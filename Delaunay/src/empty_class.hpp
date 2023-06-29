@@ -1,90 +1,167 @@
-#include "empty_class.hpp"
-#include "convex_hull.hpp"
-#include "funzioni.hpp"
-#include "ipotesi_e_flip.hpp"
-#include "funzioni_triangoli.hpp"
+#ifndef __EMPTY_H
+#define __EMPTY_H
 
-
+#include <algorithm>
 #include <fstream>
 #include <vector>
 #include <sstream>
 #include <string>
-#include <algorithm>
-#include <iostream>
+
 #include <cmath>
+#include <vector>
 #include <map>
-#include <unordered_set>
+#include <Eigen/Eigen>
+#include<list>
+#include <iostream>
 
 
-using namespace std;
+
+
+using namespace std ;
+using namespace Eigen;
+
+
 
 namespace Delaunay
 {
-void Delaunay()
+
+class Point{  // definisco la classe Point che ha come attributi la coordinata x e y e il suo identificatore
+public:
+ double x;
+ double y;
+ int id;
+Point(double x, double y) : x(x), y(y), id(-1) {}  // costruttore che mi chiede solo le coordinate
+Point(double x, double y,int id) : x(x), y(y), id(id) {} //costruttore classico
+Point() : x(0), y(0), id(0) {} //costruttore vuoto
+
+//  operatori per operazioni sui punti
+ Point operator-(const Point & right)
+    {
+       return Point(x - right.x,y - right.y);
+    }
+ Point operator+(const Point & right)
+    {
+       return Point(x + right.x,y + right.y);
+    }
+ inline bool operator==( const Point p2) const
+ {
+    return (x==p2.x && y==p2.y);
+ }
+ inline bool operator!=( const Point p2) const
+ {
+    return (x!=p2.x || y!=p2.y);
+ }
+};
+
+
+class Lati
 {
-    string InputFilePath = "C:/Users/sarab/OneDrive/Desktop/PCS2023_Exercises/Projects/Delaunay/Dataset/Test2.csv";
-    vector<Point> punti;  // vettore di punti
+public:
+    Point points[2];  //array di due punti
+    int id;
 
-    // leggo i dati dal file
-    InputFile(InputFilePath,punti);
-
-    // prendo il convexhull
-    int id_triangoli = 0;
-    int id_lati = 0;
-    vector<Triangle> triangoli;  // creo un vettore di triangoli
-    vector <Lati> lati; // creo un vettore di lati
-    vector <Point> convexhull =  ConvexHull(punti);  // dati i punti mi restituisce il Convehull di tali punti (ossia il loro inviluppo convesso)
-    triangoli = TriangoliConvexHull(convexhull,lati,id_triangoli,id_lati);  // dato il ConvexHull, crea una prima triangolazione che verifica l'ipotesi di delaunay
-
-    vector<Point> punti_da_aggiungere;
-    for (int i=0;i<int(punti.size());i++)   // per ogni punto, se il punto non fa parte del convexHull lo aggiungo nella lista dei punti da aggiungere
+    Lati(){} // costruttore vuoto
+    Lati(Point p1,Point p2) // costruttore dati i due punti del lato
     {
-        bool a = true;
-         for (int j=0;j<int(convexhull.size());j++)
-         {
-            if(punti[i] == convexhull[j])
-            {
-                a=false;
-                break;
-            }
-         }
-         if(a)
-            {
-             punti_da_aggiungere.push_back(punti[i]);
-            }
-
+        points[0] = p1;
+        points[1] = p2;
+        id = -1;
     }
 
-
-
-    // cerco dentro a quale triangolo si trova il punto
-    for(int i=0;i<int(punti_da_aggiungere.size());i++)
+    Lati(Point p1,Point p2,int i) // costruttore dati due punti del lato e il suop identificatore
     {
-        int posizione = -1;  // rappresenta la posizione nel vettore, non il suo id
-        if(Posizione(punti_da_aggiungere[i],triangoli,posizione))
-        {
-            triangoli_int(triangoli[posizione],punti_da_aggiungere[i],lati,triangoli,id_triangoli,id_lati);  // collega un punto con i vertici del triangolo e verfifica l'ipotesi
-        }
-
+        points[0] = p1;
+        points[1] = p2;
+        id = i;
     }
 
-    // output schermo
-    cout<<"Lati: "<<endl;
-    for (int i=0;i<int(lati.size());i++)
+    // operatori per operazioni sui lati
+    inline bool operator==( const Lati l) const
     {
-        Point p1;
-        p1 = lati[i].points[0];
-        Point p2;
-        p2 = lati[i].points[1];
-        cout<<to_string(i+1)<<") "<<"punto di inizio: ("<<p1.x<<","<<p1.y<<")       punto di fine: ("<<p2.x<<","<<p2.y <<")"<<endl;  
+       return ((points[0]==l.points[0] || points[0]==l.points[1])&&(points[1]==l.points[0] || points[1]==l.points[1]));
+    }
+    inline bool operator!=( const Lati l) const
+    {
+       return ((points[0]!=l.points[0] && points[0]!=l.points[1])||(points[1]!=l.points[0] && points[1]!=l.points[1]));
     }
 
-    // output file
-    string output = "C:/Users/sarab/OneDrive/Desktop/PCS2023_Exercises/Projects/Delaunay/Dataset/fileoutput.csv";
-    CreoFileOutput(output,lati);
+};
+
+
+
+class Triangle
+{
+  public:
+ // attributi
+    int id;
+    Point  points[3];  // array dei punti di cui è formato ( va bene array perchè ho una dimensione fissa)
+    Lati  sides[3];  // array con i lati di cui è formato
+    int adiacenti[3] = {-1,-1,-1};  // id dei triangoli a cui è adiacente
+
+ Triangle(Point p1,Point p2,Point p3) // costruttore dati tre punti, me li ordina già in automatico
+ {
+    points[0] = p1;
+    points[1] = p2;
+    points[2] = p3;
+    ordinapunti();    // metodo che serve a ordinare i punti in senso antiorario
+    sides[0] = Lati(points[0],points[1]);
+    sides[1] = Lati(points[1],points[2]);
+    sides[2] = Lati(points[2],points[0]);
+ }
+ Triangle(Point p1,Point p2,Point p3,int t,int l) // costruttore dati tre punti, il suo id e l'id dei suoi lati
+ {
+    points[0] = p1;
+    points[1] = p2;
+    points[2] = p3;
+    id = t;
+    ordinapunti();
+    sides[0] = Lati(points[0],points[1],l);
+    sides[1] = Lati(points[1],points[2],l+1);
+    sides[2] = Lati(points[2],points[0],l+2);
+ }
+
+ Triangle(Lati l1,Lati l2,Lati l3) // costruttore dati tre lati
+ {
+    sides[0] = l1;
+    sides[1] = l2;
+    sides[2] = l3;
+    points[0] = l1.points[0];
+    points[1] = l2.points[0];
+    points[2] = l3.points[0];
+    ordinapunti();
+ }
+
+ Triangle(){} // costruttore vuoto
+
+void ordinapunti () // restituisce il triangolo ordinato in senso antiorario
+ {
+    Point AB = points[1] - points[0];
+    Point AC = points[2] - points[0];
+    double z = AB.x*AC.y - AB.y*AC.x;
+    if (z<0)
+    {
+        Point  tmp = points[2];
+        points[2] = points[1];
+        points[1] = tmp;
+    }
+
+ }
+
+// operatori per operazioni sui triangoli
+ inline bool operator==( const Triangle t2) const
+ {
+    return ((points[0]==t2.points[0]||points[0]==t2.points[1]||points[0]==t2.points[2])&& (points[1]==t2.points[0]||points[1]==t2.points[1]||points[1]==t2.points[2])&& (points[2]==t2.points[0]||points[2]==t2.points[1]||points[2]==t2.points[2]));
+ }
+ inline bool operator!=( const Triangle t2) const
+ {
+    return ((points[0]!=t2.points[0]&&points[0]!=t2.points[1]&&points[0]!=t2.points[2])|| (points[1]!=t2.points[0]&&points[1]!=t2.points[1]&&points[1]!=t2.points[2])|| (points[2]!=t2.points[0]&&points[2]!=t2.points[1]&&points[2]!=t2.points[2]));
+ }
+ };
+
+
+ void Delaunay();
 }
-}
 
 
 
-
+#endif //__EMPTY_H
