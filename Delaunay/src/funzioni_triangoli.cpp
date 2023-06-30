@@ -21,9 +21,9 @@ using namespace std;
 
 namespace Delaunay
 {
-double tol = 1e-10;
 bool dentro ( Point a, Point b, Point c)   // ritorna falso se è minore di zero, cioè è a destra ( io voglio sia a sinistra quindi vero, cioè c è a sinistra del lato ab)
 {
+    double tol = 1e-10;
     Point AB = b-a;
     Point AC = c-a;
     double det = AB.x*AC.y - AB.y*AC.x;
@@ -54,7 +54,8 @@ bool dentro ( Point a, Point b, Point c)   // ritorna falso se è minore di zero
 
 
  bool isInsideCircumcircle(Triangle t, Point q)  // ritorna vero se il punto è dentro la circonferenza circoscritta
- {
+ {  
+     double tol = 1e-10;
      Point a = t.points[0];
      Point b = t.points[1];
      Point c = t.points[2];
