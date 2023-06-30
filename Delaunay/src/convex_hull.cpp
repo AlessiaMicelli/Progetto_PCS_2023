@@ -19,11 +19,11 @@ using namespace std;
 
 namespace Delaunay
 {
-double tol = 1e-10;
 bool UpperLine(const Point& p1,          //  dati tre punti, restituisce un booleano che dice se la linea definita dai tre punti forma un angolo superiore o inferiore
                const Point& p2,
                const Point& p3)
 {
+  double tol = 1e-10;
   double dx1 = p2.x - p1.x;
   double dy1 = p2.y - p1.y;
   double dx2 = p3.x - p1.x;
