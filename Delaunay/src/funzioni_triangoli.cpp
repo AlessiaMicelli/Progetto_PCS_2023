@@ -21,12 +21,13 @@ using namespace std;
 
 namespace Delaunay
 {
+double tol = 1e-10;
 bool dentro ( Point a, Point b, Point c)   // ritorna falso se è minore di zero, cioè è a destra ( io voglio sia a sinistra quindi vero, cioè c è a sinistra del lato ab)
 {
     Point AB = b-a;
     Point AC = c-a;
     double det = AB.x*AC.y - AB.y*AC.x;
-    if (det<0)
+    if (det<tol)
         return false;
     else
         return true;
@@ -67,7 +68,7 @@ bool dentro ( Point a, Point b, Point c)   // ritorna falso se è minore di zero
 
      double det = ax * (by * (cx*cx+cy*cy) - cy*(bx*bx+by*by)) - bx * (ay*(cx*cx+cy*cy) - cy*(ax*ax+ay*ay)) + cx * (ay*(bx*bx+by*by) - by*(ax*ax+ay*ay));
 
-     return det > 0.0;
+     return det > tol;
 
  }
 
